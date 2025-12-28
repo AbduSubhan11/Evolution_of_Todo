@@ -6,5 +6,3 @@
 .env.development
 .env.production
 .env.test
-/test_app.py
-/test_functionality.py
