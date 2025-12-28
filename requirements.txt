@@ -1,0 +1,4 @@
+# Core dependencies for Console Todo Application
+# No external dependencies required beyond Python standard library for basic functionality
+# Testing dependencies
+pytest>=7.0.0

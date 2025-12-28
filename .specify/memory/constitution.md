@@ -1,55 +1,49 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!-- SYNC IMPACT REPORT:
+Version change: N/A (initial creation) → 1.0.0
+Modified principles: N/A
+Added sections: All sections (initial constitution creation)
+Removed sections: N/A
+Templates requiring updates:
+  - .specify/templates/plan-template.md ✅ updated
+  - .specify/templates/spec-template.md ✅ updated
+  - .specify/templates/tasks-template.md ✅ updated
+  - .specify/templates/commands/*.md ⚠ pending (check for agent-specific references)
+Follow-up TODOs: None
+-->
+# Todo App Constitution
+The Evolution of Todo – Spec-Driven & AI-Native Development
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Project Scope (Phase I)
+Goal: Build a console-based Todo application with a interactive cli UI with all operation like Add Task – Create new todo items; Delete Task – Remove tasks from the list; Update Task – Modify existing task details; View Task List – Display all tasks; Mark as Complete – Toggle task completion status; and Search & Filter – Search by keyword; filter by status, priority, or date. Constraint: Development MUST follow a single, well-defined phase without skipping architectural steps. Non-Negotiable: The design must remain compatible with future evolution, without implementing future features now.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Development Methodology (Strict)
+Spec-Driven Development is mandatory. Claude Code MUST generate all implementation. Humans may only author: Constitution, Specs, and Constraints.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Architecture (Non-Negotiable)
+Clear separation between: Domain logic, State management, and Interaction layer. Domain behavior MUST NOT depend on storage or UI technology. Architecture must remain simple, deterministic, and inspectable.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Test-First Approach
+Behavior must be specified before implementation. Specs define acceptance criteria. Implementation must satisfy specs exactly. Refactoring is allowed only if specs remain unchanged.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Data Management (Phase I Rule)
+State is stored ONLY in system memory. In-memory collections (e.g., arrays/lists of Todos) are the single source of truth. No persistence across application restarts. File systems, databases, and external services are strictly forbidden.
 
-### [PRINCIPLE_6_NAME]
+### VI. Code Quality Standards
+Deterministic behavior. Predictable outputs. Clear error handling. Type safety where applicable. Readable and inspectable structure.
 
+### VII. Interaction Model
+User interaction occurs through a console-based CLI interface with clear, intuitive commands for all operations.
 
-[PRINCIPLE__DESCRIPTION]
+## Tooling Rules
+Python version: 3.12+ (or 3.13 if available locally). Package manager: uv (mandatory). Environment isolation: uv-managed virtual environment. No global installs.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
-
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Development Workflow
+All implementation must follow Spec-Driven Development (SDD) methodology. Specifications must be complete before any implementation begins. Claude Code is responsible for all code generation. Human developers are limited to creating constitution, specifications, and constraints only.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Constitution governs all development activities and supersedes any conflicting practices. Amendments require explicit documentation, approval, and migration plan if applicable. All implementation must remain compatible with future evolution without implementing future features prematurely. Development must follow the prescribed architectural separation of concerns.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2025-12-27 | **Last Amended**: 2025-12-27
