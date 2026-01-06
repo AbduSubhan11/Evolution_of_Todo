@@ -36,8 +36,35 @@ Deterministic behavior. Predictable outputs. Clear error handling. Type safety w
 ### VII. Interaction Model
 User interaction occurs through a console-based CLI interface with clear, intuitive commands for all operations.
 
+### VIII. Phase II: Full-Stack Web Application (Phase II Rule)
+Goal: Transform the console app into a modern multi-user web application with persistent storage. All Phase I functionality must be implemented as a web application with user authentication and data persistence.
+
 ## Tooling Rules
 Python version: 3.12+ (or 3.13 if available locally). Package manager: uv (mandatory). Environment isolation: uv-managed virtual environment. No global installs.
+
+### IX. Phase II Technology Stack (Phase II Rule)
+- Frontend: Next.js 16+ (App Router)
+- Backend: Python FastAPI
+- ORM: SQLModel
+- Database: Neon Serverless PostgreSQL
+- Spec-Driven: Claude Code + Spec-Kit Plus
+- Authentication: Better Auth
+
+### X. Phase II API Requirements (Phase II Rule)
+All functionality must be exposed through RESTful API endpoints:
+- GET /api/{user_id}/tasks - List all tasks
+- POST /api/{user_id}/tasks - Create a new task
+- GET /api/{user_id}/tasks/{id} - Get task details
+- PUT /api/{user_id}/tasks/{id} - Update a task
+- DELETE /api/{user_id}/tasks/{id} - Delete a task
+- PATCH /api/{user_id}/tasks/{id}/complete - Toggle completion
+
+### XI. Phase II Authentication Requirements (Phase II Rule)
+- Implement user signup/signin using Better Auth
+- Use JWT tokens for authentication between Next.js frontend and FastAPI backend
+- Backend must verify JWT tokens and filter data by authenticated user's ID
+- All API endpoints must require valid JWT token (401 Unauthorized for unauthenticated requests)
+- Each user only sees/modifies their own tasks
 
 ## Development Workflow
 All implementation must follow Spec-Driven Development (SDD) methodology. Specifications must be complete before any implementation begins. Claude Code is responsible for all code generation. Human developers are limited to creating constitution, specifications, and constraints only.
