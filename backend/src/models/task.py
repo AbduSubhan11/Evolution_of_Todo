@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime
 import uuid
 from pydantic import field_validator
+from .user import User
 
 class TaskBase(SQLModel):
     title: str

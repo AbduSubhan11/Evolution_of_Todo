@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
 from typing import Optional
-from datetime import timedelta
+from datetime import timedelta, datetime
+import uuid
 from ..database import get_session
 from ..models.user import User, UserCreate, UserRead
 from .security import verify_password, get_password_hash, create_access_token
@@ -12,7 +13,16 @@ router = APIRouter()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-@router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+from pydantic import BaseModel
+
+class UserWithToken(BaseModel):
+    id: uuid.UUID
+    email: str
+    created_at: datetime
+    updated_at: datetime
+    token: str
+
+@router.post("/register", response_model=UserWithToken, status_code=status.HTTP_201_CREATED)
 def register(user_create: UserCreate, session: Session = Depends(get_session)):
     """Register a new user account."""
     # Check if user already exists
@@ -47,7 +57,11 @@ def register(user_create: UserCreate, session: Session = Depends(get_session)):
         "token": access_token
     }
 
-@router.post("/login")
+class LoginResponse(BaseModel):
+    user: UserRead
+    token: str
+
+@router.post("/login", response_model=LoginResponse)
 def login(email: str = Form(...), password: str = Form(...), session: Session = Depends(get_session)):
     """Authenticate user and return JWT token."""
     # Find user by email
@@ -65,11 +79,15 @@ def login(email: str = Form(...), password: str = Form(...), session: Session = 
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
 
+    user_data = UserRead(
+        id=user.id,
+        email=user.email,
+        created_at=user.created_at,
+        updated_at=user.updated_at
+    )
+
     return {
-        "user": {
-            "id": user.id,
-            "email": user.email,
-        },
+        "user": user_data,
         "token": access_token
     }
 

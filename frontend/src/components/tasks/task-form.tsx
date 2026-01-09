@@ -50,7 +50,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onTaskUpdated, initi
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className=" p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-bold mb-4">
         {initialTask ? 'Edit Task' : 'Create New Task'}
       </h2>
@@ -63,7 +63,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onTaskUpdated, initi
 
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label htmlFor="title" className="block text-gray-700 mb-2">
+          <label htmlFor="title" className="block text-white mb-2">
             Title *
           </label>
           <input
@@ -77,7 +77,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onTaskUpdated, initi
         </div>
 
         <div className="mb-4">
-          <label htmlFor="description" className="block text-gray-700 mb-2">
+          <label htmlFor="description" className="block text-white mb-2">
             Description
           </label>
           <textarea
@@ -90,7 +90,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onTaskUpdated, initi
         </div>
 
         <div className="mb-6">
-          <label htmlFor="status" className="block text-gray-700 mb-2">
+          <label htmlFor="status" className="block text-white mb-2">
             Status
           </label>
           <select

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import TaskList from '@/components/tasks/task-list';
+import TaskForm from '@/components/tasks/task-form';
 
 export default function Home() {
   return (
@@ -14,7 +14,10 @@ export default function Home() {
           </p>
         </div>
         <div className="bg-[#1a222a] rounded-2xl shadow-sm border border-[#2d3748] p-6 sm:p-8">
-          <TaskList />
+          <TaskForm />
+          <div className="mt-8">
+            <TaskList />
+          </div>
         </div>
       </div>
     </main>

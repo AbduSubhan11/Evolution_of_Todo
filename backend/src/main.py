@@ -3,19 +3,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api.v1.endpoints import tasks
 from .auth.routers import router as auth_router
 from .database import engine
-from .models import user  # Import models to register them
+from .models import user, task  # Import models to register them
 from .middleware.auth import jwt_auth_middleware
 from .api.error_handlers import add_global_exception_handlers
 
 # Create tables
 user.SQLModel.metadata.create_all(bind=engine)
+task.SQLModel.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Todo API", version="1.0.0")
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=["http://localhost:3000"],  # In production, replace with specific origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,4 +45,4 @@ def health_check():
     return {"status": "healthy"}
 
 # Add global exception handlers
-app = add_global_exception_handlers(app)
+add_global_exception_handlers(app)

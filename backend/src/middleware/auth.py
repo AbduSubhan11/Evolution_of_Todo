@@ -8,6 +8,11 @@ async def jwt_auth_middleware(request: Request, call_next):
     Middleware to validate JWT tokens in requests
     This will check for Authorization header and validate the JWT token
     """
+    # Skip auth for OPTIONS requests (preflight CORS requests)
+    if request.method == "OPTIONS":
+        response = await call_next(request)
+        return response
+
     # Skip auth for public endpoints
     if request.url.path in ["/", "/health", "/docs", "/redoc", "/openapi.json", "/api/auth/register", "/api/auth/login", "/api/auth/logout", "/api/auth/health"]:
         response = await call_next(request)
@@ -22,7 +27,13 @@ async def jwt_auth_middleware(request: Request, call_next):
         )
 
     token = auth_header.split(" ")[1]
-    user_id = get_current_user_id(token)
+    try:
+        user_id = get_current_user_id(token)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token"
+        )
 
     if not user_id:
         raise HTTPException(

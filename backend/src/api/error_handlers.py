@@ -89,8 +89,8 @@ async def general_exception_handler(request: Request, exc: Exception):
         }
     }
 
-    # Add details only in development
-    if str(exc) and __name__ == "__main__":
+    # Add details only in development (removed __name__ check to avoid issues)
+    if str(exc):
         error_response["error"]["details"] = str(exc)
 
     return JSONResponse(
