@@ -2,9 +2,11 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  completed: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  status: 'pending' | 'completed' | 'archived';
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string | null;
 }
 
 export type TaskFilter = 'all' | 'completed' | 'pending';

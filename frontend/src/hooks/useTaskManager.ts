@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Task, TaskFilter, TaskState } from '@/lib/types';
-import { mockApi } from '@/lib/mock-api';
+import { taskService } from '@/lib/task-service';
+import { useAuth } from '@/providers/auth-provider';
 
 export const useTaskManager = () => {
   const [state, setState] = useState<TaskState>({
@@ -11,18 +12,30 @@ export const useTaskManager = () => {
     error: null,
   });
 
+  const { user, token } = useAuth();
   const [filter, setFilter] = useState<TaskFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Load tasks on initial render
   useEffect(() => {
-    loadTasks();
-  }, []);
+    if (user?.id && token) {
+      loadTasks();
+    }
+  }, [user?.id, token]);
 
   const loadTasks = async () => {
+    if (!user?.id || !token) {
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: 'User not authenticated'
+      }));
+      return;
+    }
+
     setState(prev => ({ ...prev, loading: true, error: null }));
     try {
-      const tasks = await mockApi.getTasks();
+      const tasks = await taskService.getTasks(user.id, token);
       setState(prev => ({ ...prev, tasks, loading: false }));
     } catch (error) {
       setState(prev => ({
@@ -34,9 +47,13 @@ export const useTaskManager = () => {
   };
 
   const createTask = async (title: string, description?: string) => {
+    if (!user?.id || !token) {
+      throw new Error('User not authenticated');
+    }
+
     setState(prev => ({ ...prev, loading: true }));
     try {
-      const newTask = await mockApi.createTask(title, description);
+      const newTask = await taskService.createTask(user.id, { title, description, status: 'pending' }, token);
       setState(prev => ({
         ...prev,
         tasks: [newTask, ...prev.tasks],
@@ -54,9 +71,13 @@ export const useTaskManager = () => {
   };
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
+    if (!user?.id || !token) {
+      throw new Error('User not authenticated');
+    }
+
     setState(prev => ({ ...prev, loading: true }));
     try {
-      const updatedTask = await mockApi.updateTask(id, updates);
+      const updatedTask = await taskService.updateTask(user.id, id, updates, token);
       setState(prev => ({
         ...prev,
         tasks: prev.tasks.map(task => (task.id === id ? updatedTask : task)),
@@ -74,9 +95,13 @@ export const useTaskManager = () => {
   };
 
   const deleteTask = async (id: string) => {
+    if (!user?.id || !token) {
+      throw new Error('User not authenticated');
+    }
+
     setState(prev => ({ ...prev, loading: true }));
     try {
-      await mockApi.deleteTask(id);
+      await taskService.deleteTask(user.id, id, token);
       setState(prev => ({
         ...prev,
         tasks: prev.tasks.filter(task => task.id !== id),
@@ -93,9 +118,19 @@ export const useTaskManager = () => {
   };
 
   const toggleTaskCompletion = async (id: string) => {
+    if (!user?.id || !token) {
+      throw new Error('User not authenticated');
+    }
+
     setState(prev => ({ ...prev, loading: true }));
     try {
-      const updatedTask = await mockApi.toggleTaskCompletion(id);
+      const currentTask = prev.tasks.find(task => task.id === id);
+      if (!currentTask) {
+        throw new Error('Task not found');
+      }
+
+      const shouldComplete = currentTask.status !== 'completed';
+      const updatedTask = await taskService.toggleTaskCompletion(user.id, id, shouldComplete, token);
       setState(prev => ({
         ...prev,
         tasks: prev.tasks.map(task => (task.id === id ? updatedTask : task)),

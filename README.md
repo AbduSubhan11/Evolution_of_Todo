@@ -34,6 +34,9 @@ A simple console-based todo application built with Python that allows users to m
    pip install -r requirements.txt
    ```
 
+For Manually Run
+cd backend && python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
+
 ## How to Run the Application
 
 **Important**: Make sure your virtual environment is activated before running the application.

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import TaskList from '@/components/TaskList/TaskList';
+import TaskList from '@/components/tasks/task-list';
 
 export default function Home() {
   return (
