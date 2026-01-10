@@ -10,9 +10,9 @@ export const filterTasks = (
 
   // Apply status filter
   if (filter === 'completed') {
-    filteredTasks = filteredTasks.filter(task => task.completed);
+    filteredTasks = filteredTasks.filter(task => task.status === 'completed');
   } else if (filter === 'pending') {
-    filteredTasks = filteredTasks.filter(task => !task.completed);
+    filteredTasks = filteredTasks.filter(task => task.status === 'pending');
   }
 
   // Apply search query filter
@@ -29,7 +29,8 @@ export const filterTasks = (
 };
 
 // Format date for display
-export const formatDate = (date: Date): string => {
+export const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
@@ -42,4 +43,20 @@ export const formatDate = (date: Date): string => {
 // Generate a unique ID
 export const generateId = (): string => {
   return Math.random().toString(36).substr(2, 9);
+};
+
+// Create a compatibility wrapper for API tasks
+export const createTaskCompatibilityWrapper = (apiTask: any) => {
+  return {
+    ...apiTask,
+    get completed() {
+      return apiTask.status === 'completed';
+    },
+    get createdAt() {
+      return new Date(apiTask.created_at);
+    },
+    get updatedAt() {
+      return new Date(apiTask.updated_at);
+    }
+  };
 };

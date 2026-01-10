@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status, Request
-from ..auth.security import verify_token, get_current_user_id
+from ..auth.security import verify_token, verify_better_auth_token, get_current_user_id
 from typing import Optional
 import uuid
 
@@ -7,6 +7,7 @@ async def jwt_auth_middleware(request: Request, call_next):
     """
     Middleware to validate JWT tokens in requests
     This will check for Authorization header and validate the JWT token
+    Supports both custom backend tokens and Better Auth tokens
     """
     # Skip auth for OPTIONS requests (preflight CORS requests)
     if request.method == "OPTIONS":

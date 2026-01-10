@@ -2,16 +2,18 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { apiClient } from '@/lib/api-client';
+import { signIn as betterSignIn, signUp as betterSignUp, signOut as betterSignOut, getSession } from '@/lib/better-auth-client';
 
-interface User {
+interface BetterAuthUser {
   id: string;
   email: string;
-  created_at: string;
-  updated_at: string;
+  name?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: BetterAuthUser | null;
   token: string | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<any>;
@@ -27,66 +29,140 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<BetterAuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session on initial load
-    const storedToken = localStorage.getItem('access_token');
-    const storedUser = localStorage.getItem('user');
-
-    if (storedToken && storedUser && storedUser !== 'undefined') {
+    // Check for existing session on initial load using Better Auth
+    const checkSession = async () => {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser && typeof parsedUser === 'object') {
-          setToken(storedToken);
-          setUser(parsedUser);
+        const session = await getSession();
+        if (session && session.data && session.data.user) {
+          // Transform Better Auth user to our format
+          const betterAuthUser = {
+            id: session.data.user.id,
+            email: session.data.user.email,
+            name: session.data.user.name,
+            createdAt: session.data.user.createdAt || new Date().toISOString(),
+            updatedAt: session.data.user.updatedAt || new Date().toISOString(),
+          };
+
+          setUser(betterAuthUser);
+          return;
+        }
+
+        // Fallback: some setups store a token and user email in localStorage.
+        // If the server session is not available but the client has a token, use that
+        // to restore a minimal authenticated state (not a substitute for a real session).
+        // For proper user ID, we'll rely on the backend session endpoint which returns the UUID.
+        try {
+          const tokenFromStorage = localStorage.getItem('token');
+          const emailFromStorage = localStorage.getItem('email');
+          if (tokenFromStorage && emailFromStorage) {
+            // We need to call the session endpoint to get the proper user ID
+            // Instead of using email as ID, we'll make a call to get the real user info
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'}/api/auth/session`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${tokenFromStorage}`,
+                'Content-Type': 'application/json',
+              },
+            });
+
+            if (res.ok) {
+              const userData = await res.json();
+              // Use the actual user ID from the backend
+              setUser({
+                id: userData.id, // This should be the UUID
+                email: userData.email,
+                name: userData.name,
+                createdAt: userData.created_at || new Date().toISOString(),
+                updatedAt: userData.updated_at || new Date().toISOString(),
+              });
+            } else {
+              // If session endpoint fails, we still have the token and email
+              // but we don't have the proper UUID, so we'll need to handle this carefully
+              // In this case, we should not set the user as we don't have the proper ID
+              console.warn('Session endpoint failed, unable to get proper user ID');
+            }
+            setToken(tokenFromStorage);
+            return;
+          }
+        } catch (e) {
+          // localStorage may not be available in some environments (shouldn't happen in browser)
+          console.warn('Could not read from localStorage to restore session', e);
         }
       } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        // Clear invalid stored data
-        localStorage.removeItem('user');
+        console.error('Failed to get session:', error);
+      } finally {
+        setLoading(false);
       }
-    }
-    setLoading(false);
+    };
+
+    checkSession();
   }, []);
 
   const handleSignIn = async (email: string, password: string) => {
     try {
-      const data = await apiClient.login(email, password);
+      // Use Better Auth's sign-in
+      const result = await betterSignIn.email({
+        email,
+        password,
+        callbackURL: '/', // Redirect after sign in
+      });
 
-      // Store token and user info
-      const { user, token } = data;
-      localStorage.setItem('access_token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      if (result?.error) {
+        throw new Error(result.error.message || 'Login failed');
+      }
 
-      setToken(token);
-      setUser(user);
+      // Get the updated session
+      const session = await getSession();
+      if (session && session.data && session.data.user) {
+        const betterAuthUser = {
+          id: session.data.user.id,
+          email: session.data.user.email,
+          name: session.data.user.name,
+          createdAt: session.data.user.createdAt || new Date().toISOString(),
+          updatedAt: session.data.user.updatedAt || new Date().toISOString(),
+        };
 
-      return data;
+        setUser(betterAuthUser);
+      } else {
+        // If no server session is available, but the backend/client stored a token/email in localStorage,
+        // restore a minimal authenticated state from that info so refreshes don't kick the user out.
+        try {
+          const tokenFromStorage = localStorage.getItem('token');
+          const emailFromStorage = localStorage.getItem('email');
+          if (tokenFromStorage && emailFromStorage) {
+            setToken(tokenFromStorage);
+            setUser({
+              id: emailFromStorage,
+              email: emailFromStorage,
+              name: undefined,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            });
+          }
+        } catch (e) {
+          console.warn('Could not read from localStorage after sign in', e);
+        }
+      }
+
+      return result;
     } catch (error) {
       console.error('Sign in error:', error);
-      if (error instanceof SyntaxError) {
-        throw new Error('Invalid response from server. Please try again.');
-      }
       throw error;
     }
   };
 
   const handleSignOut = async () => {
     try {
-      // Call backend logout endpoint if needed
-      if (token) {
-        await apiClient.logout(token);
-      }
+      await betterSignOut();
 
-      // Clear local storage
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user');
-
-      setToken(null);
+      // Clear state
       setUser(null);
+      setToken(null);
     } catch (error) {
       console.error('Sign out error:', error);
     }
@@ -94,22 +170,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const handleSignUp = async (email: string, password: string) => {
     try {
-      const data = await apiClient.register(email, password);
+      // Use Better Auth's sign-up
+      const result = await betterSignUp.email({
+        email,
+        password,
+        name: email.split('@')[0], // Use part of email as name
+      });
 
-      // Store token and user info
-      const { user, token } = data;
-      localStorage.setItem('access_token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      if (result?.error) {
+        throw new Error(result.error.message || 'Registration failed');
+      }
 
-      setToken(token);
-      setUser(user);
+      // Get the updated session
+      const session = await getSession();
+      if (session && session.data && session.data.user) {
+        const betterAuthUser = {
+          id: session.data.user.id,
+          email: session.data.user.email,
+          name: session.data.user.name,
+          createdAt: session.data.user.createdAt || new Date().toISOString(),
+          updatedAt: session.data.user.updatedAt || new Date().toISOString(),
+        };
 
-      return data;
+        setUser(betterAuthUser);
+      }
+
+      return result;
     } catch (error) {
       console.error('Sign up error:', error);
-      if (error instanceof SyntaxError) {
-        throw new Error('Invalid response from server. Please try again.');
-      }
       throw error;
     }
   };

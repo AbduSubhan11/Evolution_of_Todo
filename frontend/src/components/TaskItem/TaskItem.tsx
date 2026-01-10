@@ -54,7 +54,7 @@ const TaskItem = ({ task }: TaskItemProps) => {
 
   return (
     <div className={`p-5 mb-4 rounded-xl border transition-all duration-200 ${
-      task.completed
+      task.status === 'completed'
         ? 'bg-[#222d38] border-[#38a169] shadow-sm'
         : 'bg-[#1a222a] border-[#2d3748] shadow-sm hover:shadow-md'
     }`}>
@@ -108,31 +108,31 @@ const TaskItem = ({ task }: TaskItemProps) => {
           <div className="flex items-start">
             <input
               type="checkbox"
-              checked={task.completed}
+              checked={task.status === 'completed'}
               onChange={handleToggleCompletion}
               className={`mt-1 mr-4 h-5 w-5 rounded border-[#4a5568] focus:ring-[#3b82f6] focus:ring-2 ${
-                task.completed
+                task.status === 'completed'
                   ? 'bg-[#38a169] text-white'
                   : 'bg-[#1a222a] text-[#3b82f6]'
               }`}
             />
             <div className="flex-grow">
               <h3 className={`text-lg font-medium mb-1 ${
-                task.completed ? 'line-through text-[#718096]' : 'text-[#e6e6e6]'
+                task.status === 'completed' ? 'line-through text-[#718096]' : 'text-[#e6e6e6]'
               }`}>
                 {task.title}
               </h3>
               {task.description && (
                 <p className={`mb-2 ${
-                  task.completed ? 'text-[#718096]' : 'text-[#a0aec0]'
+                  task.status === 'completed' ? 'text-[#718096]' : 'text-[#a0aec0]'
                 }`}>
                   {task.description}
                 </p>
               )}
               <p className="text-xs text-[#718096]">
-                Created: {formatDate(task.createdAt)}
-                {task.updatedAt.getTime() !== task.createdAt.getTime() && (
-                  <span>, Updated: {formatDate(task.updatedAt)}</span>
+                Created: {formatDate(task.created_at)}
+                {new Date(task.updated_at).getTime() !== new Date(task.created_at).getTime() && (
+                  <span>, Updated: {formatDate(task.updated_at)}</span>
                 )}
               </p>
             </div>

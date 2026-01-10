@@ -15,13 +15,6 @@
 npm install @better-auth/react @better-auth/next-js
 ```
 
-2. Set up environment variables:
-```
-NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
-BETTER_AUTH_SECRET=your-secret-key
-BETTER_AUTH_TRUST_HOST=true
-```
-
 ### Backend (FastAPI)
 1. Install dependencies:
 ```bash

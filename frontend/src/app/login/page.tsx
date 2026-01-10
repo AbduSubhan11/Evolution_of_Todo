@@ -15,14 +15,25 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, router]);
 
+  // If already authenticated, show a loading state while redirecting
   if (isAuthenticated) {
-    return null; // Or a loading indicator while redirecting
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0f1419] py-12 px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="text-[#e6e6e6] mt-4">Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0f1419] py-12 px-4 sm:px-6 lg:px-8">
       <LoginForm
-        onLoginSuccess={() => router.push('/')}
+        onLoginSuccess={() => {
+          // Force a page reload after successful login to ensure proper state initialization
+          window.location.href = '/';
+        }}
         onSwitchToRegister={() => router.push('/register')}
       />
     </div>

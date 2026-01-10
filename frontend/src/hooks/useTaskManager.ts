@@ -124,7 +124,7 @@ export const useTaskManager = () => {
 
     setState(prev => ({ ...prev, loading: true }));
     try {
-      const currentTask = prev.tasks.find(task => task.id === id);
+      const currentTask = state.tasks.find(task => task.id === id);
       if (!currentTask) {
         throw new Error('Task not found');
       }

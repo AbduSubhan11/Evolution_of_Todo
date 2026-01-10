@@ -5,6 +5,8 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
 from ..config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+import json
+import base64
 
 
 # Password hashing context
@@ -49,6 +51,42 @@ def verify_token(token: str) -> Optional[dict]:
     except JWTError:
         return None
 
+def verify_better_auth_token(token: str) -> Optional[dict]:
+    """
+    Verify a Better Auth JWT token.
+    For this to work, Better Auth should be configured with the same secret as the backend.
+    """
+    try:
+        # Better Auth tokens use the same underlying JWT technology
+        # If Better Auth is configured with the same secret, this should work
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+        return payload
+    except JWTError:
+        # If the token doesn't match our secret, it might be a Better Auth token with its own secret
+        # In a real implementation, you'd need to share secrets or use a different approach
+        try:
+            # Attempt to decode without verification to inspect the token structure
+            # This is safe as we're not trusting the contents, just inspecting structure
+            unverified_payload = jwt.get_unverified_claims(token)
+
+            # Check if this looks like a Better Auth token by examining claims
+            if 'sid' in unverified_payload or 'role' in unverified_payload:
+                # This appears to be a Better Auth token
+                # For this to work properly, you'd need to configure Better Auth to use the same secret
+                # or implement proper public key verification
+                payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+                user_id: str = payload.get("sub")
+                if user_id is None:
+                    return None
+                return payload
+        except JWTError:
+            pass
+
+        return None
+
 def verify_refresh_token(token: str) -> Optional[dict]:
     """Verify a refresh token and return the payload if valid."""
     try:
@@ -64,7 +102,8 @@ def verify_refresh_token(token: str) -> Optional[dict]:
 
 def get_current_user_id(token: str) -> Optional[uuid.UUID]:
     """Extract user ID from a JWT token."""
-    payload = verify_token(token)
+    # Try both regular and Better Auth token verification
+    payload = verify_token(token) or verify_better_auth_token(token)
     if payload is None:
         return None
     user_id = payload.get("sub")

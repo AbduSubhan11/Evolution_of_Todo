@@ -13,13 +13,19 @@ router = APIRouter()
 def get_tasks(
     user_id: UUID,
     request: Request,  # Access to request state set by middleware
+    search: Optional[str] = Query(None, description="Search tasks by title or description"),
     status_filter: Optional[str] = Query(None, description="Filter by status (pending, completed, archived)"),
+    completed: Optional[bool] = Query(None, description="Filter by completion status"),
+    date_from: Optional[datetime] = Query(None, description="Filter tasks created from this date"),
+    date_to: Optional[datetime] = Query(None, description="Filter tasks created until this date"),
     limit: Optional[int] = Query(None, ge=1, le=100, description="Number of results to return"),
     offset: Optional[int] = Query(None, ge=0, description="Number of results to skip"),
+    sort_by: Optional[str] = Query("created_at", description="Sort by field (created_at, updated_at, title, status)"),
+    sort_order: Optional[str] = Query("desc", description="Sort order (asc, desc)"),
     session: Session = Depends(get_session)
 ):
     """
-    Get all tasks for the authenticated user
+    Get all tasks for the authenticated user with search and filter capabilities
     """
     # Verify the user_id matches the authenticated user
     authenticated_user_id = getattr(request.state, 'user_id', None)
@@ -32,9 +38,55 @@ def get_tasks(
     # Build query
     query = select(Task).where(Task.user_id == user_id)
 
+    # Apply search filter
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where((Task.title.ilike(search_pattern)) | (Task.description.ilike(search_pattern)))
+
+    # Apply status filter
     if status_filter:
         query = query.where(Task.status == status_filter)
 
+    # Apply completion filter
+    if completed is not None:
+        if completed:
+            query = query.where(Task.status == "completed")
+        else:
+            query = query.where(Task.status != "completed")
+
+    # Apply date range filter
+    if date_from:
+        query = query.where(Task.created_at >= date_from)
+
+    if date_to:
+        query = query.where(Task.created_at <= date_to)
+
+    # Apply sorting
+    if sort_by == "created_at":
+        if sort_order == "asc":
+            query = query.order_by(Task.created_at.asc())
+        else:
+            query = query.order_by(Task.created_at.desc())
+    elif sort_by == "updated_at":
+        if sort_order == "asc":
+            query = query.order_by(Task.updated_at.asc())
+        else:
+            query = query.order_by(Task.updated_at.desc())
+    elif sort_by == "title":
+        if sort_order == "asc":
+            query = query.order_by(Task.title.asc())
+        else:
+            query = query.order_by(Task.title.desc())
+    elif sort_by == "status":
+        if sort_order == "asc":
+            query = query.order_by(Task.status.asc())
+        else:
+            query = query.order_by(Task.status.desc())
+    else:
+        # Default sorting by created_at descending
+        query = query.order_by(Task.created_at.desc())
+
+    # Apply limit and offset
     if limit:
         query = query.limit(limit)
 

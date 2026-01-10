@@ -2,7 +2,7 @@ class ApiClient {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001';
+    this.baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'; // Backend API for tasks
   }
 
   // Get headers with authorization
@@ -38,8 +38,16 @@ class ApiClient {
       const response = await fetch(url, config);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        // Try to get error data from response
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          // If response is not JSON, create a generic error
+          errorData = { message: `HTTP error! status: ${response.status}` };
+        }
+
+        throw new Error(errorData.detail || errorData.message || `HTTP error! status: ${response.status}`);
       }
 
       return await response.json();
@@ -49,42 +57,34 @@ class ApiClient {
     }
   }
 
-  // Authentication endpoints
-  async register(email: string, password: string) {
-    return this.request('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-  }
-
-  async login(email: string, password: string) {
-    const formData = new URLSearchParams();
-    formData.append('email', email);
-    formData.append('password', password);
-
-    return this.request('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-    });
-  }
-
-  async logout(token?: string) {
-    return this.request('/api/auth/logout', {
-      method: 'POST',
-    }, token);
-  }
+  // Authentication is now handled by Better Auth
+  // These methods are no longer needed since AuthProvider uses Better Auth directly
+  // Keeping them for potential future use if needed
 
   // Task endpoints
-  async getTasks(userId: string, token: string, filters?: { status?: string; limit?: number; offset?: number }) {
+  async getTasks(userId: string, token: string, filters?: {
+    search?: string;
+    status?: string;
+    completed?: boolean;
+    date_from?: string;
+    date_to?: string;
+    limit?: number;
+    offset?: number;
+    sort_by?: string;
+    sort_order?: string;
+  }) {
     let url = `/api/${userId}/tasks`;
     if (filters) {
       const searchParams = new URLSearchParams();
-      if (filters.status) searchParams.append('status', filters.status);
+      if (filters.search) searchParams.append('search', filters.search);
+      if (filters.status) searchParams.append('status_filter', filters.status);
+      if (filters.completed !== undefined) searchParams.append('completed', filters.completed.toString());
+      if (filters.date_from) searchParams.append('date_from', filters.date_from);
+      if (filters.date_to) searchParams.append('date_to', filters.date_to);
       if (filters.limit) searchParams.append('limit', filters.limit.toString());
       if (filters.offset) searchParams.append('offset', filters.offset.toString());
+      if (filters.sort_by) searchParams.append('sort_by', filters.sort_by);
+      if (filters.sort_order) searchParams.append('sort_order', filters.sort_order);
       url += `?${searchParams.toString()}`;
     }
     return this.request(url, {}, token);

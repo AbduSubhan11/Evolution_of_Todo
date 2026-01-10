@@ -12,34 +12,40 @@ interface Task {
 }
 
 interface TaskFilters {
+  search?: string;
   status?: 'pending' | 'completed' | 'archived';
+  completed?: boolean;
+  date_from?: string;
+  date_to?: string;
   limit?: number;
   offset?: number;
+  sort_by?: string;
+  sort_order?: string;
 }
 
 class TaskService {
   async getTasks(userId: string, token: string, filters?: TaskFilters): Promise<Task[]> {
-    return apiClient.getTasks(userId, token, filters);
+    return await apiClient.getTasks(userId, token, filters) as Task[];
   }
 
   async createTask(userId: string, taskData: Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'completed_at'>, token: string): Promise<Task> {
-    return apiClient.createTask(userId, taskData, token);
+    return await apiClient.createTask(userId, taskData, token) as Task;
   }
 
   async getTask(userId: string, taskId: string, token: string): Promise<Task> {
-    return apiClient.getTask(userId, taskId, token);
+    return await apiClient.getTask(userId, taskId, token) as Task;
   }
 
-  async updateTask(userId: string, taskId: string, taskData: Partial<Task>, token: string): Promise<Task> {
-    return apiClient.updateTask(userId, taskId, taskData, token);
+  async updateTask(userId: string, taskId: string, taskData: Partial<Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>>, token: string): Promise<Task> {
+    return await apiClient.updateTask(userId, taskId, taskData, token) as Task;
   }
 
   async deleteTask(userId: string, taskId: string, token: string): Promise<void> {
-    return apiClient.deleteTask(userId, taskId, token);
+    await apiClient.deleteTask(userId, taskId, token);
   }
 
   async toggleTaskCompletion(userId: string, taskId: string, complete: boolean, token: string): Promise<Task> {
-    return apiClient.toggleTaskCompletion(userId, taskId, complete, token);
+    return await apiClient.toggleTaskCompletion(userId, taskId, complete, token) as Task;
   }
 }
 

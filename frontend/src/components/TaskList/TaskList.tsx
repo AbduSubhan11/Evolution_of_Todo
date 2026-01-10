@@ -86,8 +86,8 @@ const TaskList = () => {
           <div className="text-sm text-[#718096]">
             {tasks.length > 0 && (
               <span>
-                <span className="text-[#38a169]">{tasks.filter(t => t.completed).length}</span> completed,
-                <span className="text-[#d69e2e]"> {tasks.filter(t => !t.completed).length}</span> pending
+                <span className="text-[#38a169]">{tasks.filter(t => t.status === 'completed').length}</span> completed,
+                <span className="text-[#d69e2e]"> {tasks.filter(t => t.status !== 'completed').length}</span> pending
               </span>
             )}
           </div>

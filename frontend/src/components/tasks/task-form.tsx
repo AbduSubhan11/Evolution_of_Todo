@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Task, taskService } from '../../lib/task-service';
 import { useAuth } from '../../providers/auth-provider';
 
@@ -15,6 +15,20 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onTaskUpdated, initi
   const [title, setTitle] = useState(initialTask?.title || '');
   const [description, setDescription] = useState(initialTask?.description || '');
   const [status, setStatus] = useState(initialTask?.status || 'pending');
+
+  // Update form fields when initialTask changes (for editing)
+  useEffect(() => {
+    if (initialTask) {
+      setTitle(initialTask.title);
+      setDescription(initialTask.description || '');
+      setStatus(initialTask.status);
+    } else {
+      // Reset form when no initialTask (creating new task)
+      setTitle('');
+      setDescription('');
+      setStatus('pending');
+    }
+  }, [initialTask]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -37,10 +51,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onTaskUpdated, initi
         onTaskCreated?.(newTask);
       }
 
-      // Reset form
-      setTitle('');
-      setDescription('');
-      setStatus('pending');
+      if (!initialTask) {
+        // Only reset form when creating a new task, not when updating
+        setTitle('');
+        setDescription('');
+        setStatus('pending');
+      }
     } catch (err) {
       setError('Failed to save task');
       console.error('Error saving task:', err);
@@ -71,7 +87,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onTaskUpdated, initi
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border bg-transparent border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
         </div>
@@ -84,7 +100,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onTaskUpdated, initi
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border bg-transparent border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows={3}
           />
         </div>
@@ -96,8 +112,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated, onTaskUpdated, initi
           <select
             id="status"
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => setStatus(e.target.value as 'pending' | 'completed' | 'archived')}
+            className="w-full px-3 py-2 border bg-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="pending">Pending</option>
             <option value="completed">Completed</option>

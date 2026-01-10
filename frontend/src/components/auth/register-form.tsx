@@ -37,9 +37,19 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess, onSwitch
 
     try {
       await signUp(email, password);
-      onRegisterSuccess?.();
+      // Redirect to login after successful registration
+      onSwitchToLogin?.();
     } catch (err: any) {
-      setError(err.message || 'An error occurred during registration');
+      // Handle specific error messages
+      if (err.message.includes('409')) {
+        setError('Email already exists. Please use a different email address.');
+      } else if (err.message.includes('400')) {
+        setError('Invalid input. Please check your email and password.');
+      } else if (err.message.includes('Network Error')) {
+        setError('Unable to connect to the server. Please check your internet connection.');
+      } else {
+        setError(err.message || 'An error occurred during registration. Please try again.');
+      }
       console.error('Registration error:', err);
     } finally {
       setLoading(false);

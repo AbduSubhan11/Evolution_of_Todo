@@ -15,14 +15,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 from pydantic import BaseModel
 
-class UserWithToken(BaseModel):
-    id: uuid.UUID
-    email: str
-    created_at: datetime
-    updated_at: datetime
+class RegisterResponse(BaseModel):
+    user: UserRead
     token: str
 
-@router.post("/register", response_model=UserWithToken, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
 def register(user_create: UserCreate, session: Session = Depends(get_session)):
     """Register a new user account."""
     # Check if user already exists
@@ -49,11 +46,15 @@ def register(user_create: UserCreate, session: Session = Depends(get_session)):
         data={"sub": str(db_user.id)}, expires_delta=access_token_expires
     )
 
+    user_data = UserRead(
+        id=db_user.id,
+        email=db_user.email,
+        created_at=db_user.created_at,
+        updated_at=db_user.updated_at
+    )
+
     return {
-        "id": db_user.id,
-        "email": db_user.email,
-        "created_at": db_user.created_at,
-        "updated_at": db_user.updated_at,
+        "user": user_data,
         "token": access_token
     }
 
@@ -96,3 +97,41 @@ def logout():
     """Invalidate user session."""
     # In a real implementation, you might add the token to a blacklist
     return {"message": "Successfully logged out"}
+
+@router.get("/session", response_model=UserRead)
+def get_session(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+    """Get current user session based on token."""
+    from .security import verify_token, get_current_user_id
+
+    payload = verify_token(token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    user_id = payload.get("sub")
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    user = session.get(User, user_uuid)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return UserRead(
+        id=user.id,
+        email=user.email,
+        created_at=user.created_at,
+        updated_at=user.updated_at
+    )

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -X GET http://localhost:8000/api/auth/session -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxZDBhNmJkMS05YTFiLTQ3N2EtYWI4MS1iMWY3MzAzNjM5NmQiLCJleHAiOjE3NjgwMzY2MDF9.9-3ZRyd-XAA3JHPHoCQ6RINb3dnf5cuWq2s4NgrZCJo\")"
+    ]
+  }
+}
