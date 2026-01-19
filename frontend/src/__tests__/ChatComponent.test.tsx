@@ -135,7 +135,7 @@ describe('ChatInterface Component', () => {
     // Initially, input is empty, so button should be disabled
     expect(sendButton).toBeDisabled();
 
-    fireEvent.change(input, { target: { value: 'Non-empty message' });
+    fireEvent.change(input, { target: { value: 'Non-empty message' } });
     expect(sendButton).not.toBeDisabled();
   });
 

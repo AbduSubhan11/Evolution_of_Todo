@@ -81,7 +81,7 @@ const ChatInterface = () => {
         {messages.length === 0 ? (
           <div className="text-center text-[#a0aec0] mt-8">
             <p>Start a conversation to manage your tasks!</p>
-            <p className="text-sm mt-2">Try saying: "Add a task to buy groceries"</p>
+            <p className="text-sm mt-2">{'Try saying: "Add a task to buy groceries"'}</p>
           </div>
         ) : (
           messages.map((message) => (
@@ -148,7 +148,7 @@ const ChatInterface = () => {
           </button>
         </div>
         <p className="text-xs text-[#a0aec0] mt-2 hidden">
-          Examples: "Add a task to buy groceries", "Show me my tasks", "Complete the meeting task"
+          {'Examples: "Add a task to buy groceries", "Show me my tasks", "Complete the meeting task"'}
         </p>
       </form>
     </div>

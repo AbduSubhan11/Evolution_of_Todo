@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Task, TaskFilter, TaskState } from '@/lib/types';
 import { taskService } from '@/lib/task-service';
 import { useAuth } from '@/providers/auth-provider';
@@ -16,14 +16,7 @@ export const useTaskManager = () => {
   const [filter, setFilter] = useState<TaskFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Load tasks on initial render
-  useEffect(() => {
-    if (user?.id && token) {
-      loadTasks();
-    }
-  }, [user?.id, token]);
-
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     if (!user?.id || !token) {
       setState(prev => ({
         ...prev,
@@ -44,7 +37,13 @@ export const useTaskManager = () => {
         error: error instanceof Error ? error.message : 'Failed to load tasks',
       }));
     }
-  };
+  }, [user?.id, token]);
+
+  useEffect(() => {
+    if (user?.id && token) {
+      loadTasks();
+    }
+  }, [user?.id, token, loadTasks]);
 
   const createTask = async (title: string, description?: string) => {
     if (!user?.id || !token) {

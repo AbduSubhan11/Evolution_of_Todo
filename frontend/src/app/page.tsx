@@ -53,7 +53,7 @@ export default function Home() {
       // If authenticated but no token, reset tasks
       setTasks([]);
     }
-  }, [isAuthenticated, user?.id, token]);
+  }, [isAuthenticated, user?.id, token, isLoadingTasks]);
 
   // Listen for task list refresh events triggered by chatbot operations
   useEffect(() => {
