@@ -1,3 +1,4 @@
+{/* eslint-disable-next-line react/no-unescaped-entities */}
 'use client';
 
 import React, { useState } from 'react';
@@ -91,7 +92,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, onSwitchToRegiste
 
       <div className="mt-4 text-center">
         <p className="text-[#a0aec0]">
-          Don&apos;t have an account?
+           {"Don't have an account?"}
           <button
             onClick={onSwitchToRegister}
             className="text-blue-400 hover:text-blue-300 hover:underline focus:outline-none transition-colors"
