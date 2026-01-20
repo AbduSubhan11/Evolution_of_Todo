@@ -1,5 +1,5 @@
-{/* eslint-disable-next-line react/no-unescaped-entities */}
 'use client';
+{/* eslint-disable-next-line react/no-unescaped-entities */}
 
 import React, { useState } from 'react';
 import { useAuth } from '../../providers/auth-provider';
