@@ -1,6 +1,8 @@
 from sqlmodel import create_engine, Session
 from urllib.parse import urlparse
 import os
+from contextlib import contextmanager, asynccontextmanager
+from typing import AsyncGenerator
 
 # Get database URL from environment
 database_url = os.getenv("NEON_DATABASE_URL", "sqlite:///./todo_app.db")
@@ -18,3 +20,14 @@ else:
 def get_session():
     with Session(engine) as session:
         yield session
+
+@asynccontextmanager
+async def get_session_context() -> AsyncGenerator[Session, None]:
+    """
+    Async context manager for database sessions
+    """
+    with Session(engine) as session:
+        try:
+            yield session
+        finally:
+            session.close()

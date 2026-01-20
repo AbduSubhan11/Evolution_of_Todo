@@ -9,19 +9,6 @@ export const auth = betterAuth({
     provider: 'sqlite',
     url: process.env.DATABASE_URL || './todo_app.db',
   },
-  // Add JWT plugin for token generation
-  plugins: [
-    jwt({
-      secret: process.env.BETTER_AUTH_SECRET || process.env.SECRET_KEY || 'your-better-auth-secret-change-this-in-production',
-    }),
-  ],
-  // Define user model
-  user: {
-    data: {
-      email: 'email',
-      name: 'string',
-    },
-  },
   // Session configuration
   session: {
     expiresIn: 7 * 24 * 60 * 60, // 7 days

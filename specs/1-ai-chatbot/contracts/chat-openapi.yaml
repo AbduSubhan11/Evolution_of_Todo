@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: Todo AI Chatbot API
+  description: API for AI-powered chatbot interface to manage todo tasks
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://api.todoapp.com
+    description: Production server
+paths:
+  /api/{user_id}/chat:
+    post:
+      summary: Send a message to the AI chatbot
+      description: Process natural language input and return AI response with task operations
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The ID of the authenticated user
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Successful response from AI chatbot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - user does not have access to this resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+      tags:
+        - Chat
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: Optional conversation ID to continue existing conversation
+        message:
+          type: string
+          maxLength: 10000
+          description: Natural language message from the user
+      example:
+        conversation_id: "123e4567-e89b-12d3-a456-426614174000"
+        message: "Add a task to buy groceries tomorrow"
+
+    ChatResponse:
+      type: object
+      required:
+        - conversation_id
+        - response
+        - status
+      properties:
+        conversation_id:
+          type: string
+          format: uuid
+          description: The conversation ID (newly created if not provided)
+        response:
+          type: string
+          description: AI-generated response to the user
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolCall'
+          description: List of tools called during processing
+        status:
+          type: string
+          enum: [success, error]
+          description: Status of the request
+      example:
+        conversation_id: "123e4567-e89b-12d3-a456-426614174000"
+        response: "I've added the task 'buy groceries tomorrow' to your list."
+        tool_calls:
+          - id: "call_abc123"
+            function:
+              name: "add_task"
+              arguments: "{\"title\": \"buy groceries tomorrow\", \"description\": \"\"}"
+            type: "function"
+        status: "success"
+
+    ToolCall:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the tool call
+        function:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Name of the function called
+              enum: [add_task, list_tasks, complete_task, delete_task, update_task]
+            arguments:
+              type: string
+              description: Arguments passed to the function as JSON string
+        type:
+          type: string
+          description: Type of the tool call
+          default: "function"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details (optional)
+      example:
+        error: "INVALID_INPUT"
+        message: "Message is too long"
+        details:
+          field: "message"
+          maxLength: 10000
+
+tags:
+  - name: Chat
+    description: AI chatbot interaction endpoints

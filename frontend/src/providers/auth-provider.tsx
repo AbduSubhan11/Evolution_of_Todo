@@ -62,7 +62,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (tokenFromStorage && emailFromStorage) {
             // We need to call the session endpoint to get the proper user ID
             // Instead of using email as ID, we'll make a call to get the real user info
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'}/api/auth/session`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/auth/session`, {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${tokenFromStorage}`,
