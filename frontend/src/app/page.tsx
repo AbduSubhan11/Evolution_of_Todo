@@ -176,7 +176,7 @@ export default function Home() {
         {isAuthenticated && (
           <div className={`fixed right-4 bottom-4 z-50 transition-all duration-300 ${
             showChat ? 'translate-x-0' : 'translate-x-96'
-          }`}>
+          }`}> gi
             <div className="bg-[#1a222a] rounded-2xl shadow-lg border border-[#2d3748] w-80 h-96 flex flex-col">
               <div className="flex justify-between items-center p-4 border-b border-[#2d3748]">
                 <h3 className="font-semibold text-[#e6e6e6] flex items-center">
